@@ -28,6 +28,7 @@ const availableContainerColors = [
 ]
 
 let containerNameTemplate = "name role";
+let containerNameTruncate = false;
 
 function randomIcon() {
   return availableContainerIcons[Math.random() * availableContainerIcons.length | 0]
@@ -92,6 +93,9 @@ function listener(details) {
   for (const [key, value] of Object.entries(params)) {
     name = name.replace(key, value);
   }
+  if (name.length > 32 && truncate) {
+    name = name.substring(0, 32) + "\u2026";
+  }
 
   let str = '';
   let decoder = new TextDecoder("utf-8");
@@ -145,13 +149,14 @@ function listener(details) {
 // Fetch our custom defined container name template
 function onGot(item) {
   containerNameTemplate = item.template || "name role";
+  containerNameTruncate = item.truncate || false;
 }
 
 function onError(error) {
   console.log("No custom template for AWS SSO containers, using default");
 }
 
-let getting = browser.storage.sync.get("template");
+let getting = browser.storage.sync.get("template", "truncate");
 getting.then(onGot, onError);
 
 browser.webRequest.onBeforeRequest.addListener(
